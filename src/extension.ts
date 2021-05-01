@@ -1,4 +1,6 @@
+import spaceify from './spaceify';
 import * as vscode from 'vscode';
+import orderImports from './orderImports';
 
 export const activate = (context: vscode.ExtensionContext) => {
 
@@ -44,52 +46,4 @@ const myBeautify = (content: string[]): string[] => {
 	return content;
 };
 
-const orderImports = (content: string[]): string[] => {
-	let imports: string[] = [];
-	content.every((line, i) => {
-		if(!line.startsWith('import')) {
-			if(imports.length > 1) {
-				imports.sort((a: string, b: string) => {
-					return (
-						(a.split(a.includes(' from ') ? 'from' : " '")[0].length) - 
-						(b.split(b.includes(' from ') ? 'from' : " '")[0].length)
-					);
-				});
-				content.splice(i - imports.length, imports.length);
-				content.unshift(...imports);
-			}
-			return false;
-		}
-		imports.push(line);
-		return true;
-	});
-	return imports;
-};
-
-const spaceify = (content: string[]): string[] => {
-	let longest: number = 0;
-	let group: string[] = [];
-	
-	content.forEach((line, i) => {
-		if((line.includes('let ') || line.includes('const ') || line.includes('var ')) && line.includes('=') && !line.includes('=>')) {
-			let length: number = line.split('=')[0].length;
-			(length > longest) ? longest = length : null;
-			group.push(line);
-		} else {
-			if(group.length > 1) {
-				group.forEach((variable, x) => {
-					while(variable.split('=')[0].length < longest) {
-						let parts: string[] = variable.split('=');
-						variable = parts[0] + ' =' + parts[1];
-					};
-					content[i - (group.length - x)] = variable;
-				});
-			} 
-			group = [];
-			longest = 0;
-		}
-	});
-	return content;
-};
-
-export function deactivate() {}
+export const deactivate = () => {};

@@ -4,7 +4,7 @@ This extension designed to beautify the code according to my syntax rules
 
 ## Features
 
-* Spaceify - creates equal space between multiple variables declaration to their value
+* Spaceify - creates equal space between multiple variables declaration and their value
 * Order Imports - Order import statements by length from the shortest one to the longest one
 
 ## Requirements
@@ -14,7 +14,7 @@ Not yet
 ## Extension Settings
 
 * `myBeautify.beautify`: Apply all the beautify fixes
-* `myBeautify.spaceify`: Create equal space between multiple variables declaration to their value
+* `myBeautify.spaceify`: Create equal space between multiple variables declaration and their value
 * `myBeautify.orderImports`: Order import statements by length
 
 ## Known Issues
