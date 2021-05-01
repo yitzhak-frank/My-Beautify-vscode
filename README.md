@@ -1,18 +1,21 @@
-# myBeautify README
+# My Beautify README
 
 This extension designed to beautify the code according to my syntax rules
 
 ## Features
 
-spaceify - creates equal space between multiple variables declaration to their value
+* Spaceify - creates equal space between multiple variables declaration to their value
+* Order Imports - Order import statements by length from the shortest one to the longest one
 
 ## Requirements
 
-not yet
+Not yet
 
 ## Extension Settings
 
-* `myBeautify.spaceify`: create equal space between multiple variables declaration to their value
+* `myBeautify.beautify`: Apply all the beautify fixes
+* `myBeautify.spaceify`: Create equal space between multiple variables declaration to their value
+* `myBeautify.orderImports`: Order import statements by length
 
 ## Known Issues
 

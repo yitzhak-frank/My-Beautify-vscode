@@ -1,8 +1,10 @@
 {
 	"name": "myBeautify",
-	"displayName": "myBeautify",
-	"description": "make equal space between variables",
-	"publisher": "fmry2gfodfscpmvv6q73tmmvjgqpu2racfnbbcdv3hjnj67exgjq",
+	"displayName": "My Beautify",
+	"description": "Beautify the code according to my syntax rules",
+	"publisher": "isaac-frank",
+	"publishConfig": {"tag": "Top 10 EXS | ⭐⭐⭐⭐⭐ 4,375,509 | Repository | License IL |"},
+	"author": {"name": "issac frank", "email": "yitzhakfrank@gmail.com"},
 	"icon": "logo.png",
 	"repository": {"directory": "https://github.com/yitzhak-frank/vscode-myBeautify"},
 	"version": "0.0.1",
@@ -13,7 +15,8 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:myBeautify.spaceify"
+		"onCommand:myBeautify.spaceify",
+		"onCommand:myBeautify.orderImports"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
@@ -22,6 +25,10 @@
 				"command": "myBeautify.spaceify",
 				"category": "myBeautify",
 				"title": "spaceify"
+			}, {
+				"command": "myBeautify.orderImports",
+				"category": "myBeautify",
+				"title": "orderImports"
 			}
 		]
 	},

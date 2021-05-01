@@ -2,20 +2,71 @@ import * as vscode from 'vscode';
 
 export const activate = (context: vscode.ExtensionContext) => {
 
-	const disposable = vscode.commands.registerCommand('myBeautify.spaceify', () => {
-		const editor = vscode.window.activeTextEditor;
-		if(!editor) { return; }
+	context.subscriptions.push(
 
-		const lines: string[]    = editor.document.getText().split('\n');
-		const newContent: string = myBeautify(lines).join('\n');
+		vscode.commands.registerCommand('myBeautify.beautify', () => {
+			const editor = vscode.window.activeTextEditor;
+			if(!editor) { return; }
+
+			const lines: string[]    = editor.document.getText().split('\n');
+			const newContent: string = myBeautify(lines).join('\n');
+			
+			editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, lines.length, 0), newContent));
+		}),
+
+		vscode.commands.registerCommand('myBeautify.spaceify', () => {
+			const editor = vscode.window.activeTextEditor;
+			if(!editor) { return; }
+
+			const lines: string[]    = editor.document.getText().split('\n');
+			const newContent: string = spaceify(lines).join('\n');
+			
+			editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, lines.length, 0), newContent));
+		}),
 		
-		editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, lines.length, 0), newContent));
-	});
+		vscode.commands.registerCommand('myBeautify.orderImports', () => {
+			const editor = vscode.window.activeTextEditor;
+			if(!editor) { return; }
 
-	context.subscriptions.push(disposable);
+			const lines: string[]    = editor.document.getText().split('\n');
+			const imports: string[]  = orderImports(lines);
+			const newContent: string = imports.join('\n') + '\n';
+			
+			if(imports.length < 2) { return; }
+			editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, imports.length, 0), newContent));
+		}),
+	);
 };
 
 const myBeautify = (content: string[]): string[] => {
+	spaceify(content);
+	orderImports(content);
+	return content;
+};
+
+const orderImports = (content: string[]): string[] => {
+	let imports: string[] = [];
+	content.every((line, i) => {
+		if(!line.startsWith('import')) {
+			if(imports.length > 1) {
+				imports.sort((a: string, b: string) => {
+					return (
+						(a.split(a.includes(' from ') ? 'from' : " '")[0].length) - 
+						(b.split(b.includes(' from ') ? 'from' : " '")[0].length)
+					);
+				});
+				content.splice(i - imports.length, imports.length);
+				content.unshift(...imports);
+			}
+			return false;
+		}
+		imports.push(line);
+		return true;
+	});
+	return imports;
+};
+
+const spaceify = (content: string[]): string[] => {
 	let longest: number = 0;
 	let group: string[] = [];
 	
