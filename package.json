@@ -4,7 +4,7 @@
 	"description": "make equal space between variables",
 	"publisher": "fmry2gfodfscpmvv6q73tmmvjgqpu2racfnbbcdv3hjnj67exgjq",
 	"icon": "logo.png",
-	"repository": {},
+	"repository": {"directory": "https://github.com/yitzhak-frank/vscode-myBeautify"},
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.55.0"
