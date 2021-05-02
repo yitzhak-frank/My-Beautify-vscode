@@ -10,10 +10,12 @@ const spaceify = (content: string[]): string[] => {
 		} else {
 			if(group.length > 1) {
 				group.forEach((variable, x) => {
-					while(variable.split('=')[0].length < longest) {
-						let parts: string[] = variable.split('=');
-						variable = parts[0] + ' =' + parts[1];
-					};
+					let parts: string[] = variable.split('=');
+					let length:  number = parts[0].length;
+
+					for(let space = 0; space < longest - length; space++) { parts[0] += ' '; }
+
+					variable = parts[0] + '=' + parts[1];
 					content[i - (group.length - x)] = variable;
 				});
 			} 

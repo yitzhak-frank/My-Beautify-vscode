@@ -14,6 +14,7 @@
 		"Other"
 	],
 	"activationEvents": [
+		"onCommand:myBeautify.beautify",
 		"onCommand:myBeautify.spaceify",
 		"onCommand:myBeautify.orderImports"
 	],
@@ -21,10 +22,14 @@
 	"contributes": {
 		"commands": [
 			{
+				"command": "myBeautify.beautify",
+				"category": "myBeautify",
+				"title": "beautify"
+			},{
 				"command": "myBeautify.spaceify",
 				"category": "myBeautify",
 				"title": "spaceify"
-			}, {
+			},{
 				"command": "myBeautify.orderImports",
 				"category": "myBeautify",
 				"title": "orderImports"
