@@ -10,7 +10,7 @@ const spaceify = (content: string[]): string[] => {
 		} else {
 			if(group.length > 1) {
 				group.forEach((variable, x) => {
-					let parts: string[] = variable.split('=');
+					let parts: string[] = variable.split(/=(.+)/);
 					let length:  number = parts[0].length;
 
 					for(let space = 0; space < longest - length; space++) { parts[0] += ' '; }
