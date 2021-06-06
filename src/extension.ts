@@ -30,12 +30,12 @@ export const activate = (context: vscode.ExtensionContext) => {
 			const editor = vscode.window.activeTextEditor;
 			if(!editor) { return; }
 
-			const lines: string[]    = editor.document.getText().split('\n');
-			const imports: string[]  = orderImports(lines);
-			const newContent: string = imports.join('\n') + '\n';
+			const lines: string[]     = editor.document.getText().split('\n');
+			const { imports, length } = orderImports(lines);
+			const newContent: string  = imports.join('\n') + '\n';
 			
 			if(imports.length < 2) { return; }
-			editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, imports.length, 0), newContent));
+			editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, length, 0), newContent));
 		}),
 	);
 };
