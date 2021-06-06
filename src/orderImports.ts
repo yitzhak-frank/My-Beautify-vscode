@@ -16,6 +16,11 @@ const orderImports = (content: string[]): { imports: string[], length: number} =
 		imports.push(line);
 		return true;
 	});
+
+	// for beautify command
+	content.splice(0, length);
+	content.unshift(...removeEmptyLines(imports));
+
 	return {imports: removeEmptyLines(imports), length};
 };
 
