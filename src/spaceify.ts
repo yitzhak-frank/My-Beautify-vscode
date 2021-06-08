@@ -5,7 +5,7 @@ const spaceify = (content: string[]): string[] => {
 	content.forEach((line, i) => {
 		if((line.includes('let ') || line.includes('const ') || line.includes('var ')) && line.includes('=') && !line.includes('=>')) {
 
-			line = line.replace(/=/, ' = ').replace(/  +/g, ' ');
+			line = removeMultipleSpaces(line);
 
 			let length: number = line.split('=')[0].length;
 			length > longest ? longest = length : null;
@@ -30,6 +30,12 @@ const spaceify = (content: string[]): string[] => {
 		}
 	});
 	return content;
+};
+
+const removeMultipleSpaces = (line: string): string => {
+	let start = '', i = 1;
+	while(line[i] === ' ') { start += line[i]; i++; };
+	return start + line.replace(/=/, ' = ').replace(/  +/g, ' ');
 };
 
 export default spaceify;
