@@ -35,7 +35,7 @@ const orderImportsByLength = (imports: string[]): void => {
 
 const removeEmptyLines = (imports: string[]): string[] => {
 	imports = imports.filter(line => line.replace(/\s/g, '').length);
-	imports.push('');
+	if(imports.length) { imports.push(''); }
 	return imports;
 };
 

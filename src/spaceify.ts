@@ -3,7 +3,7 @@ const spaceify = (content: string[]): string[] => {
 	let group: string[] = [];
 	
 	content.forEach((line, i) => {
-		if((line.includes('let ') || line.includes('const ') || line.includes('var ')) && line.includes('=') && !line.includes('=>')) {
+		if(line.match(/(var|let|const)\b( +)[A-Za-z_$0-9]+( +=|=)(?!(>| +>))/g)) {
 
 			line = removeMultipleSpaces(line);
 

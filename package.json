@@ -6,7 +6,7 @@
 	"author": {"name": "Issac Frank", "email": "yitzhakfrank@gmail.com"},
 	"icon": "logo.png",
 	"repository": {"directory": "https://github.com/yitzhak-frank/vscode-myBeautify"},
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"engines": {
 		"vscode": "^1.55.0"
 	},
@@ -16,23 +16,33 @@
 	"activationEvents": [
 		"onCommand:myBeautify.beautify",
 		"onCommand:myBeautify.spaceify",
-		"onCommand:myBeautify.orderImports"
+		"onCommand:myBeautify.orderImports",
+		"onCommand:myBeautify.varsRename",
+		"onCommand:myBeautify.constify"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
 				"command": "myBeautify.beautify",
-				"category": "myBeautify",
-				"title": "beautify"
+				"category": "My Beautify",
+				"title": "Beautify"
 			},{
 				"command": "myBeautify.spaceify",
-				"category": "myBeautify",
-				"title": "spaceify"
+				"category": "My Beautify",
+				"title": "Spaceify"
 			},{
 				"command": "myBeautify.orderImports",
-				"category": "myBeautify",
-				"title": "orderImports"
+				"category": "My Beautify",
+				"title": "Order Imports"
+			},{
+				"command": "myBeautify.varsRename",
+				"category": "My Beautify",
+				"title": "Vars Rename"
+			},{
+				"command": "myBeautify.constify",
+				"category": "My Beautify",
+				"title": "Constify"
 			}
 		]
 	},
