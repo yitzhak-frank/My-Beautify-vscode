@@ -119,7 +119,7 @@ const getFunctionContent = (lines: string[]): string => {
 
 const isFunctionUsesThis = (content: string): boolean => !!content.match(/this\b/g);
 
-const fixSlfInvoking = (line: string): string => line.replace(/\(( +|)\)( +|)\)/, ')()');
+const fixSlfInvoking = (line: string): string => line.replace(/\}( +|)\(( +|)\)( +|)\)/, '})()');
 
 const isOnlyOneLine = (content: string): boolean => {
     const lines = content.split('\n').filter(line => !!line.match(/.*[^ ]/));
@@ -140,8 +140,8 @@ const turnToOneLine = (content: string, line: string) => {
 
     content = close ? lines[1].replace(/;(| +)$/,'') + close : lines[1];
 
-    if(content.match(/^(| +)\{/)) { content = `(${content.replace(/;/, '')});`; }
-    return `${line.split('=>')[0]}=>${content}`;
+    if(content.match(/^(| +)\{/)) { content = `(${content.replace(/^  +/, ' ').replace(/;/, '')});`; }
+    return `${line.split('=>')[0]}=>${content.replace(/^  +/, ' ')}`;
 };
 
 export default arrowShot;
