@@ -141,7 +141,7 @@ const turnToOneLine = (content: string, line: string) => {
     content = close ? lines[1].replace(/;(| +)$/,'') + close : lines[1];
 
     if(content.match(/^(| +)\{/)) { content = `(${content.replace(/^  +/, ' ').replace(/;/, '')});`; }
-    return `${line.split('=>')[0]}=>${content.replace(/^  +/, ' ')}`;
+    return `${line.split('=>')[0]}=>${content.replace(/^  +/, ' ')};`;
 };
 
 export default arrowShot;
