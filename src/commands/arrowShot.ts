@@ -17,7 +17,7 @@ const arrowShot = (lines: string[], length: number): string[] => {
         if(
             comment ||
             isComment(line) ||
-            !line.match(/function\b/g) || 
+            !line.match(/(^|[=:,\(?]|return\b)(| +)function\b(| +)(|\w+)(| +)\(/g) || 
             (line.match(/function\b/g)?.length || 2) > 1 ||
             line.match(/('|"|&&|\|\||:|\?)( +|)function\b/)
         ) { return; }
@@ -67,6 +67,8 @@ const turnToArrow = (line: string): string => {
     if(isOneParameterOnly(functionArgs)) { 
         functionArgs = functionArgs.substring(1, functionArgs.length -1); 
     }
+    // For bug found.
+    if(ARGS_REGEX === '\\' || functionArgs === '\\') { return line; }
     return line.replace(new RegExp(`function\\b( +|)${ARGS_REGEX}`), `${functionArgs} => `);
 };
 
@@ -141,7 +143,7 @@ const turnToOneLine = (content: string, line: string) => {
     content = close ? lines[1].replace(/;(| +)$/,'') + close : lines[1];
 
     if(content.match(/^(| +)\{/)) { content = `(${content.replace(/^  +/, ' ').replace(/;/, '')});`; }
-    return `${line.split('=>')[0]}=>${content.replace(/^  +/, ' ')};`;
+    return `${line.split('=>')[0]}=>${content.replace(/^  +/, ' ')};`.replace(/;+/, ';');
 };
 
 export default arrowShot;

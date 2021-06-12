@@ -6,7 +6,7 @@
 	"author": {"name": "Issac Frank", "email": "yitzhakfrank@gmail.com"},
 	"icon": "logo.png",
 	"repository": {"directory": "https://github.com/yitzhak-frank/vscode-myBeautify"},
-	"version": "0.2.1",
+	"version": "0.2.3",
 	"engines": {
 		"vscode": "^1.55.0"
 	},
