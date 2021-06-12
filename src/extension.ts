@@ -1,8 +1,9 @@
-import spaceify from './spaceify';
+import spaceify from './commands/spaceify';
+import constify from './commands/constify';
+import arrowShot from './commands/arrowShot';
+import varsRename from './commands/varsRename';
 import * as vscode from 'vscode';
-import orderImports from './orderImports';
-import varsRename from './varsRename';
-import constify from './constify';
+import orderImports from './commands/orderImports';
 
 export const activate = (context: vscode.ExtensionContext) => {
 
@@ -13,9 +14,10 @@ export const activate = (context: vscode.ExtensionContext) => {
 			if(!editor) { return; }
 
 			const lines: string[]    = editor.document.getText().split('\n');
+			const length: number     = lines.length;
 			const newContent: string = myBeautify(lines).join('\n');
 			
-			editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, lines.length, 0), newContent));
+			editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, length, 0), newContent));
 		}),
 
 		vscode.commands.registerCommand('myBeautify.spaceify', () => {
@@ -59,7 +61,17 @@ export const activate = (context: vscode.ExtensionContext) => {
 			
 			editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, lines.length, 0), newContent));
 		}),
-		
+
+		vscode.commands.registerCommand('myBeautify.arrowShot', () => {
+			const editor = vscode.window.activeTextEditor;
+			if(!editor) { return; }
+
+			const lines: string[]    = editor.document.getText().split('\n');
+			const length: number     = lines.length;
+			const newContent: string = arrowShot(lines, length).join('\n');
+			
+			editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, length, 0), newContent));
+		}),
 	);
 };
 
@@ -68,6 +80,7 @@ const myBeautify = (content: string[]): string[] => {
 	orderImports(content);
 	content = varsRename(content.join('\n')).split('\n');
 	content = constify(content);
+	content = arrowShot(content, content.length);
 	return content;
 };
 

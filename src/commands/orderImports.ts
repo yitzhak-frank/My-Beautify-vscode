@@ -5,7 +5,7 @@ const orderImports = (content: string[]): { imports: string[], length: number} =
 
 		line = spaceifyImportBrackets(line);
 
-		if(line.replace(/\s/g, '').length && (!line.startsWith('import') || (!line.includes("'") && !line.includes('"')))) {
+		if(line.replace(/ +/g, '').length && (!line.startsWith('import') || (!line.includes("'") && !line.includes('"')))) {
 
 			if(imports.length > 1) {
 				length = imports.length;

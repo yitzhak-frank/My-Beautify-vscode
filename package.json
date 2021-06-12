@@ -6,7 +6,7 @@
 	"author": {"name": "Issac Frank", "email": "yitzhakfrank@gmail.com"},
 	"icon": "logo.png",
 	"repository": {"directory": "https://github.com/yitzhak-frank/vscode-myBeautify"},
-	"version": "0.0.5",
+	"version": "0.2.0",
 	"engines": {
 		"vscode": "^1.55.0"
 	},
@@ -18,7 +18,8 @@
 		"onCommand:myBeautify.spaceify",
 		"onCommand:myBeautify.orderImports",
 		"onCommand:myBeautify.varsRename",
-		"onCommand:myBeautify.constify"
+		"onCommand:myBeautify.constify",
+		"onCommand:myBeautify.arrowShot"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
@@ -43,6 +44,10 @@
 				"command": "myBeautify.constify",
 				"category": "My Beautify",
 				"title": "Constify"
+			},{
+				"command": "myBeautify.arrowShot",
+				"category": "My Beautify",
+				"title": "Arrow Shot"
 			}
 		]
 	},
