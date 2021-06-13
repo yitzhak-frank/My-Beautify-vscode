@@ -43,8 +43,12 @@ const arrowShot = (lines: string[], length: number): string[] => {
             line = line.replace(/(?<=\bfunction\s)(\w+)/, '');
         }
 
+        const REST_OF_LINES = lines.slice(index +1 ,lines[index].length);
+        const LINES_CHANGED = turnToArrow(line, REST_OF_LINES);
+
         if(wrongSyntax) { return; }
-        lines[index] = removeMultipleSpaces(turnToArrow(line));
+
+        lines.splice(index, LINES_CHANGED.length, ...LINES_CHANGED);
 
         if(isOnlyOneLine(FUNCTION_CONTENT)) { 
             lines.splice(index+1, getFunctionLinesNumber(FUNCTION_CONTENT)-1);
@@ -68,37 +72,52 @@ const assignFunctionToVariable = (line: string): string => {
     return line.replace(new RegExp(`function\\b +${FUNCTION_NAME[0]}`), `const ${FUNCTION_NAME[0]} = function`);
 };
 
-const turnToArrow = (line: string): string => {
+const turnToArrow = (line: string, lines: string[]): string[] => {
     const FUNCTION = line.match(/function\b( +|)/);
-    if(!FUNCTION) { 
-        wrongSyntax = true;
-        return line; 
-    }
-    let index = FUNCTION[0].length + (FUNCTION.index || 0);
-    let functionArgs = getFunctionArgs(line, index);
-    const ARGS_REGEX = functionArgs.split('').map(char => '()[]{}<>$-=/*.?!'.includes(char) ? '\\' + char : char).join('');
-    if(isOneParameterOnly(functionArgs)) { 
-        functionArgs = functionArgs.substring(1, functionArgs.length -1); 
+
+    if(!FUNCTION) { wrongSyntax = true; }
+    if(wrongSyntax) { return [line]; }
+
+    let index = ((FUNCTION||[])[0]).length + ((FUNCTION||[]).index || 0);
+    let { args, after } = getFunctionArgs([line.substring(index, line.length), ...lines]);
+
+    const ARGS_REGEX = args.split('').map(char => '()[]{}<>$-=/*.?!'.includes(char) ? '\\' + char : char).join('');
+    const ARGS_LINES = ARGS_REGEX.split('\n');
+    
+    if(isOneParameterOnly(args)) { 
+        args = args.substring(1, args.length -1); 
     }
     // For bug found.
-    if(ARGS_REGEX === '\\' || functionArgs === '\\') { return line; }
-    return line.replace(new RegExp(`function\\b( +|)${ARGS_REGEX}`), `${functionArgs} => `);
+    if(ARGS_REGEX === '\\' || args === '\\') { return [line]; }
+
+    const CHANGES = line.replace(new RegExp(`function\\b( +|)${ARGS_LINES[0]}.*$`), `${args} =>${after}`);
+    const LINES_CHANGED = CHANGES.split('\n');
+    return [...LINES_CHANGED];
 };
 
-const getFunctionArgs = (line: string, index: number): string => {
+const getFunctionArgs = (lines: string[]): {args: string, after: string} => {
     let openBrackets: number = 0;
     let closeBrackets: number = 0;
     let functionArgs: string = '';
+    let afterArgs: string = '';
 
-    while(line[index]) {
-        if(line[index] === '(') { openBrackets++; } 
-        else if(line[index] === ')') { closeBrackets++; }
-        functionArgs += line[index];
-        if(!(openBrackets - closeBrackets)) { break; } 
-        index++;
+    for(let line of lines) {
+        let index = 0;
+        while(line[index]) {
+            if(line[index] === '(') { openBrackets++; } 
+            else if(line[index] === ')') { closeBrackets++; }
+            functionArgs += line[index];
+            index++;
+            if(closeBrackets && (closeBrackets === openBrackets)) { 
+                afterArgs = line.substring(index, line.length);
+                break; 
+            }
+        }
+        if(closeBrackets && (closeBrackets === openBrackets)) { break; }
+        functionArgs += '\n';
     }
     if(openBrackets - closeBrackets) { wrongSyntax = true; }
-    return functionArgs;
+    return { args: functionArgs, after: afterArgs};
 };
 
 const isOneParameterOnly = (line: string): boolean => !line.match(/,/g) && !((line.match(/\(/g)?.length || 2) > 1) && !line.match(/\(( +|)\)/);
@@ -113,19 +132,22 @@ const getFunctionContent = (lines: string[]): string => {
         if(isMultilineCommentStarts(line)) { comment = true; }
         if(isMultilineCommentEnds(line)) { comment = false; }
 
-        if(comment || isComment(line)) { continue; }
+        if(comment || isComment(line)) { 
+            content += '\n';
+            continue; 
+        }
 
         for(let i = 0; i < line.length; i++) {
             if(line[i] === '{') { openBrackets++; }
             else if(line[i] === '}') { closeBrackets++; }
             content += line[i];
-            if(!(openBrackets - closeBrackets)) { 
+            if(closeBrackets && (openBrackets === closeBrackets)) { 
                 const rest = line.substring(i+1, line.length).match(/^.*[^a-zA-Z0-9$_]/);
                 if(rest) { content += rest[0]; }
                 break; 
             }
         };
-        if(!(openBrackets - closeBrackets)) { break; }
+        if(closeBrackets && (openBrackets === closeBrackets)) { break; }
         content += '\n';
     }
     if(openBrackets - closeBrackets) { wrongSyntax = true; }
