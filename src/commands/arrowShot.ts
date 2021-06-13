@@ -113,7 +113,7 @@ const getFunctionContent = (lines: string[]): string => {
         if(isMultilineCommentStarts(line)) { comment = true; }
         if(isMultilineCommentEnds(line)) { comment = false; }
 
-        if(comment || isComment(line)) { break; }
+        if(comment || isComment(line)) { continue; }
 
         for(let i = 0; i < line.length; i++) {
             if(line[i] === '{') { openBrackets++; }
