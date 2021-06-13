@@ -17,17 +17,30 @@ const arrowShot = (lines: string[], length: number): string[] => {
         if(
             comment ||
             isComment(line) ||
-            !line.match(/(^|[=:,\(?]|return\b)(| +)function\b(| +)(|\w+)(| +)\(/g) || 
+            !line.match(/(^|[=:,\(?]|return\b|export\b|default\b)(| +)function\b(| +)(|\w+)(| +)\(/g) || 
             (line.match(/function\b/g)?.length || 2) > 1 ||
-            line.match(/('|"|&&|\|\||:|\?)( +|)function\b/)
+            line.match(/('|"|&&|\|\||\?)( +|)function\b/)
         ) { return; }
 
         const FUNCTION_CONTENT = getFunctionContent([(line.split(/function\b.*\)( +|)/).pop() || ''), ...lines.slice(index+1)]);
         if(isFunctionUsesThis(FUNCTION_CONTENT)) { return; }
 
+        const EXPORT_DEFAULT = line.match(/^(| +)(export\b +default\b +)/);
+        const MODULE_EXPORTS = line.match(/^(| +)(module\b(| +).(| +)exports\b)(| +)=/);
+        
+        if((EXPORT_DEFAULT || MODULE_EXPORTS) && !line.match(/function\b(| +)\(/)) {
+            line = exportDefaultAndModuleExports(index, index + FUNCTION_CONTENT.split('\n').length, lines, EXPORT_DEFAULT || MODULE_EXPORTS);
+        }
+
         const AFTER_EQUAL = !!lines[index-1]?.match(/[^=]=( +|)$/);
-        if(!isAnonymous(line, AFTER_EQUAL) && !isAssignedToVariable(line, AFTER_EQUAL)) { 
+        if(
+            line.match(/(^|export\b)(| +)function\b/) && 
+            !isAnonymous(line, AFTER_EQUAL) && 
+            !isAssignedToVariable(line, AFTER_EQUAL)
+        ) { 
             line = assignFunctionToVariable(line); 
+        } else if (!line.match(/function\b(| +)\(/)) {
+            line = line.replace(/(?<=\bfunction\s)(\w+)/, '');
         }
 
         if(wrongSyntax) { return; }
@@ -43,7 +56,7 @@ const arrowShot = (lines: string[], length: number): string[] => {
 
 const isAnonymous = (line: string, isAssign: boolean) => !isAssign && !line.match(/=( +|)function\b/) && line.match(/function\b(\(| +\()/);
 
-const isAssignedToVariable = (line: string, isAssign: boolean) => isAssign || line.match(/=( +|)function\b/);
+const isAssignedToVariable = (line: string, isAssign: boolean) => isAssign || line.match(/(const|let|var)(| +)=( +|)function\b/);
 
 const assignFunctionToVariable = (line: string): string => {
     if(line.match(/=( +|)function\b/)) { return line; }
@@ -144,6 +157,13 @@ const turnToOneLine = (content: string, line: string) => {
 
     if(content.match(/^(| +)\{/)) { content = `(${content.replace(/^  +/, ' ').replace(/;/, '')});`; }
     return `${line.split('=>')[0]}=>${content.replace(/^  +/, ' ')};`.replace(/;+/, ';');
+};
+
+const exportDefaultAndModuleExports = (index: number, length: number, lines: string[], exports: RegExpMatchArray | null): string => {
+    if(!exports) { return lines[index]; }
+    lines[index] = lines[index].substring((exports.index || 0) + exports[0].length, lines[index].length).replace(/^ +/, '');
+    lines.splice(length, 0, `\n${exports[0]} ${(lines[index].match(/(?<=\bfunction\s)(\w+)/)||[''])[0]};`.replace(/  +/, ' '));
+    return lines[index];
 };
 
 export default arrowShot;
