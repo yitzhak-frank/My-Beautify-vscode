@@ -4,7 +4,7 @@ This extension designed to beautify Javascript code according to my syntax rules
 
 ## Features
 
-- Spaceify - creates equal space between multiple variables declaration and their value.
+- Spaceify - Creates equal space between multiple variables declaration and their value.
 - Order Imports - Order import statements by length from the shortest one to the longest one.
 - Vars Rename - Replaces all variables declaration declared by 'var' to 'let' as ES6 standards.
 - Constify - Replaces declaration of all variables that have a constant value to 'const' as ES6 standards.

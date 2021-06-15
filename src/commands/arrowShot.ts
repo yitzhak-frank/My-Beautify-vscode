@@ -7,7 +7,7 @@ const arrowShot = (lines: string[], length: number): string[] => {
     // Start from the end to be able to turn two functions into one line when nested.
     lines.map(line => line).reverse().forEach((line, i) => {
         wrongSyntax = false;
-        let index = length - (i+1);
+        const index = length - (i+1);
 
         lines[index] = fixSlfInvoking(line);
 
@@ -29,7 +29,8 @@ const arrowShot = (lines: string[], length: number): string[] => {
         const MODULE_EXPORTS = line.match(/^(| +)(module\b(| +).(| +)exports\b)(| +)=/);
         
         if((EXPORT_DEFAULT || MODULE_EXPORTS) && !line.match(/function\b(| +)\(/)) {
-            line = exportDefaultAndModuleExports(index, index + FUNCTION_CONTENT.split('\n').length, lines, EXPORT_DEFAULT || MODULE_EXPORTS);
+            const length = index + FUNCTION_CONTENT.split('\n').length;
+            line = exportDefaultAndModuleExports(index, length, lines, EXPORT_DEFAULT || MODULE_EXPORTS);
         }
 
         const AFTER_EQUAL = !!lines[index-1]?.match(/[^=]=( +|)$/);
@@ -43,7 +44,7 @@ const arrowShot = (lines: string[], length: number): string[] => {
             line = line.replace(/(?<=\bfunction\s)(\w+)/, '');
         }
 
-        const REST_OF_LINES = lines.slice(index +1 ,lines[index].length);
+        const REST_OF_LINES = lines.slice(index+1, index+1 + FUNCTION_CONTENT.split('\n').length);
         const LINES_CHANGED = turnToArrow(line, REST_OF_LINES);
 
         if(wrongSyntax) { return; }
