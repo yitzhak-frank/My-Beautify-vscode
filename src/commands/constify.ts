@@ -112,10 +112,10 @@ const isVariableValueChange = (line: string, variables: string[]): boolean => {
 
         if(line.match(VARIABLE_EXIST)) {
 
-            const VALUE_CHANGE = new RegExp(`.*([-+]{2}(| +)${variable})|( +|^|\\(|\\)|\\{|>|;|,|:|\\?|\\||&)(${variable}(| +)((?=[^==])([-*\/+%=]{2})|(=[^==])))`);
+            const VALUE_CHANGE = new RegExp(`.*([-+]{2}(| +)${variable})|(.*[^.a-zA-Z0-9$_]|^| )(${variable}(| +)((?=[^==])([-*\\/+%=]{2})|(=[^==])))`);
             const ENDS_WITH_EQUAL = new RegExp(`(( |^)${variable})(=|= +| +=| += +)$`);
 
-            if(line.replace(/ +/g, '').match(VALUE_CHANGE) || line.match(ENDS_WITH_EQUAL)) { 
+            if(line.match(VALUE_CHANGE) || line.replace(/ +/g, '').match(VALUE_CHANGE) || line.match(ENDS_WITH_EQUAL)) { 
                 isConstant = false;
                 return true; 
             }
