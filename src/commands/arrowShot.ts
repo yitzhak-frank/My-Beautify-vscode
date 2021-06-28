@@ -1,21 +1,18 @@
-import { isComment, isMultilineCommentEnds, isMultilineCommentStarts } from "../helpers/match";
-import { removeMultipleSpaces } from "../helpers/replace";
+import { isComment } from "../helpers/match";
+import { filterMultilineCommentsToOneLine } from "../helpers/replace";
 
-let wrongSyntax: boolean, comment: boolean;
+let wrongSyntax: boolean;
 
 const arrowShot = (lines: string[], length: number): string[] => {
     // Start from the end to be able to turn two functions into one line when nested.
+    lines = filterMultilineCommentsToOneLine(lines);
     lines.map(line => line).reverse().forEach((line, i) => {
         wrongSyntax = false;
-        const index = length - (i+1);
+        const index = lines.length - (i+1);
 
-        lines[index] = fixSlfInvoking(line);
-
-        if(isMultilineCommentEnds(line)) { comment = true; }
-        if(isMultilineCommentStarts(line)) { comment = false; }
+        lines[index] = fixSelfInvoking(line);
 
         if(
-            comment ||
             isComment(line) ||
             !line.match(/(^|[=:,\(?]|return\b|export\b|default\b)(| +)function\b(| +)(|\w+)(| +)\(/g) || 
             (line.match(/function\b/g)?.length || 2) > 1 ||
@@ -23,7 +20,7 @@ const arrowShot = (lines: string[], length: number): string[] => {
         ) { return; }
 
         const FUNCTION_CONTENT = getFunctionContent([(line.split(/function\b.*\)( +|)/).pop() || ''), ...lines.slice(index+1)]);
-        if(isFunctionUsesThis(FUNCTION_CONTENT)) { return; }
+        if(isFunctionUsesThis(FUNCTION_CONTENT.split('\n'))) { return; }
 
         const EXPORT_DEFAULT = line.match(/^(| +)(export\b +default\b +)/);
         const MODULE_EXPORTS = line.match(/^(| +)(module\b(| +).(| +)exports\b)(| +)=/);
@@ -39,10 +36,13 @@ const arrowShot = (lines: string[], length: number): string[] => {
             !isAnonymous(line, AFTER_EQUAL) && 
             !isAssignedToVariable(line, AFTER_EQUAL)
         ) { 
+            const CODE_BEFORE = lines.slice(0, index).filter(line => !isComment(line)).join('\n');
+            if(isFunctionCalledBeforeInitialized(CODE_BEFORE, line)) { return; }
             line = assignFunctionToVariable(line); 
         } else if (!line.match(/function\b(| +)\(/)) {
             line = line.replace(/(?<=\bfunction\s)(\w+)/, '');
         }
+
 
         const REST_OF_LINES = lines.slice(index+1, index+1 + FUNCTION_CONTENT.split('\n').length);
         const LINES_CHANGED = turnToArrow(line, REST_OF_LINES);
@@ -57,6 +57,14 @@ const arrowShot = (lines: string[], length: number): string[] => {
         };
     });
     return lines;
+};
+
+const isFunctionCalledBeforeInitialized = (code: string, line: string): boolean => {
+    const FUNCTION_NAME = line.match(/(?<=\bfunction\s)(\w+)/);
+    if(!FUNCTION_NAME) { return false; }
+    const FUNCTION_CALLED_REGEX = new RegExp(`(.*[^.a-zA-Z0-9$_]|^| )${FUNCTION_NAME[0]}\\b`);
+    if(code.match(FUNCTION_CALLED_REGEX)) { return true; }
+    return false;
 };
 
 const isAnonymous = (line: string, isAssign: boolean) => !isAssign && !line.match(/=( +|)function\b/) && line.match(/function\b(\(| +\()/);
@@ -130,11 +138,9 @@ const getFunctionContent = (lines: string[]): string => {
 
     for(let line of lines) {
 
-        if(isMultilineCommentStarts(line)) { comment = true; }
-        if(isMultilineCommentEnds(line)) { comment = false; }
-
-        if(comment || isComment(line)) { 
-            content += '\n';
+        if(isComment(line)) {
+            const br = line.match(/\n/g); 
+            content += br ? br.join('') + '\n' : '\n';
             continue; 
         }
 
@@ -155,9 +161,28 @@ const getFunctionContent = (lines: string[]): string => {
     return content;
 };
 
-const isFunctionUsesThis = (content: string): boolean => !!content.match(/this\b/g);
+const isFunctionUsesThis = (lines: string[]): boolean => {
+    let isInInnerFun = false, openBrackets = 0, closeBrackets = 0;
+    for(let line of lines) {
+        if(!isInInnerFun) {  
+            const IS_FUNCTION_STARTS = line.match(/(.*[^.a-zA-Z0-9$_]|^| )function\b/);
+            if(line.match(/(.*[^.a-zA-Z0-9$_]|^| )this\b/g)) { return true; }
+            if(IS_FUNCTION_STARTS) {
+                isInInnerFun = true;
+                line = line.slice(IS_FUNCTION_STARTS[0].length);
+            }
+        } 
+        if(isInInnerFun) {
+            openBrackets += line.match(/{/g)?.length || 0;
+            closeBrackets += line.match(/}/g)?.length || 0;
+            if(!(openBrackets - closeBrackets)) { isInInnerFun = false; }
+        }
+        
+    }
+    return false;
+};
 
-const fixSlfInvoking = (line: string): string => line.replace(/\}( +|)\(( +|)\)( +|)\)/, '})()');
+const fixSelfInvoking = (line: string): string => line.replace(/\}( +|)\(( +|)\)( +|)\)/, '})()');
 
 const isOnlyOneLine = (content: string): boolean => {
     const lines = content.split('\n').filter(line => !!line.match(/.*[^ ]/));

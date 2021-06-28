@@ -1,25 +1,22 @@
-import { isComment, isMultilineCommentEnds, isMultilineCommentStarts } from "../helpers/match";
+import { isComment } from "../helpers/match";
+import { filterMultilineCommentsToOneLine } from "../helpers/replace";
 
 const 
     IS_LINE_HAS_FUNCTION_REGEX = /((^| +|\()function\b)|=>/, 
     VARIABLE_NAME_REGEX = /(?<=\b(let|var)\s)(\w+)/,
     scopes: { [inner: string]: number, outer: number } = { inner: 0, outer: 0 };
-let 
-    isConstant: boolean, 
-    comment: boolean, 
-    isInOuterFun: boolean;
+
+let isConstant: boolean, isInOuterFun: boolean;
 
 const constify = (lines: string[]): string[] => {
+    lines = filterMultilineCommentsToOneLine(lines);
     lines.forEach((line, x) => {
 
         if(!isInOuterFun) { isInOuterFun = !!line.match(IS_LINE_HAS_FUNCTION_REGEX); }
 
         const declaration = line.match(/^(| +)(let\b|var\b)/);
 
-        if(isMultilineCommentStarts(line)) { comment = true; }
-        if(isMultilineCommentEnds(line)) { comment = false; }
-
-        if(!declaration || comment || isComment(line)) { return; }
+        if(!declaration || isComment(line)) { return; }
 
         isConstant = true;
 
@@ -54,10 +51,7 @@ const checkLinesAfter = (lines: string[], variables: string[]) => {
     const innerFunVars: string[] = [];
 
     for(let line of lines) {
-        if(isMultilineCommentStarts(line)) { comment = true; }
-        if(isMultilineCommentEnds(line)) { comment = false; }
-    
-        if(comment || isComment(line)) { continue; }
+        if(isComment(line)) { continue; }
 
         if(line.match(IS_LINE_HAS_FUNCTION_REGEX)) { isInInnerFun = true; }
         if(isInOuterFun) { 
