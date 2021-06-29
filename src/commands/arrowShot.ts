@@ -6,9 +6,10 @@ let wrongSyntax: boolean;
 const arrowShot = (lines: string[], length: number): string[] => {
     // Start from the end to be able to turn two functions into one line when nested.
     lines = filterMultilineCommentsToOneLine(lines);
+    length = lines.length;
     lines.map(line => line).reverse().forEach((line, i) => {
         wrongSyntax = false;
-        const index = lines.length - (i+1);
+        const index = length - (i+1);
 
         lines[index] = fixSelfInvoking(line);
 
