@@ -1,6 +1,6 @@
 import spaceify from './commands/spaceify';
 import constify from './commands/constify';
-import arrowShot from './commands/arrowShot';
+import arrowShot from './commands/arrowShot/main';
 import varsRename from './commands/varsRename';
 import * as vscode from 'vscode';
 import orderImports from './commands/orderImports';
