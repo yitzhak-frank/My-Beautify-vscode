@@ -4,7 +4,7 @@ import { getFunctionContent, getFunctionLinesNumber } from "./get";
 import { assignFunctionToVariable, exportDefaultAndModuleExports, fixSelfInvoking, turnToArrow, turnToOneLine } from "./replace";
 import { isAnonymous, isAssignedToVariable, isFunctionCalledBeforeInitialized, isFunctionUsesThis, isOnlyOneLine } from "./match";
 
-export const syntaxFlag: {wrong: boolean} = {wrong: false};
+export const syntaxFlag: { wrong: boolean } = { wrong: false };
 
 const arrowShot = (lines: string[], length: number): string[] => {
     // Start from the end to be able to turn two functions into one line when nested.
@@ -23,7 +23,9 @@ const arrowShot = (lines: string[], length: number): string[] => {
             line.match(/('|"|&&|\|\||\?)( +|)function\b/)
         ) { return; }
 
-        const FUNCTION_CONTENT = getFunctionContent([(line.split(/function\b.*\)( +|)/).pop() || ''), ...lines.slice(index+1)]);
+        const FUNCTION_SCOPE_START = line.match(/function\b.*\)( +|){/);
+        const FUNCTION_FIRST_LINE = FUNCTION_SCOPE_START ? '{' + line.split(/function\b.*\)( +|){/).pop() : '';
+        const {content: FUNCTION_CONTENT, comment: IS_HAS_COMMENTS} = getFunctionContent([FUNCTION_FIRST_LINE, ...lines.slice(index+1)]);
         if(isFunctionUsesThis(FUNCTION_CONTENT.split('\n'))) { return; }
 
         const EXPORT_DEFAULT = line.match(/^(| +)(export\b +default\b +)/);
@@ -55,7 +57,7 @@ const arrowShot = (lines: string[], length: number): string[] => {
 
         lines.splice(index, LINES_CHANGED.length, ...LINES_CHANGED);
 
-        if(isOnlyOneLine(FUNCTION_CONTENT)) { 
+        if(!IS_HAS_COMMENTS && isOnlyOneLine(FUNCTION_CONTENT)) { 
             lines.splice(index+1, getFunctionLinesNumber(FUNCTION_CONTENT)-1);
             lines[index] = turnToOneLine(FUNCTION_CONTENT, lines[index]);
         };

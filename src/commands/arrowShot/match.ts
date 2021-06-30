@@ -4,9 +4,14 @@ export const isAssignedToVariable = (line: string, isAssign: boolean) => isAssig
 
 export const isOneParameterOnly = (line: string): boolean => !line.match(/,/g) && !((line.match(/\(/g)?.length || 2) > 1) && !line.match(/\(( +|)\)/);
 
+export const isOnlyOneLine = (content: string): boolean => !!content.replace(/ +/g, '').match(/^{(\n+|).*(\n+|)}.*[^\n]$/);
+
 export const isFunctionCalledBeforeInitialized = (lines: string[], line: string): boolean => {
     const FUNCTION_NAME = line.match(/(?<=\bfunction\s)(\w+)/);
     if(!FUNCTION_NAME) { return false; }
+
+    const FUNCTION_CALLED_REGEX = new RegExp(`(.*[^.a-zA-Z0-9$_]|^| |\\n)${FUNCTION_NAME[0]}\\b`);
+    if(!lines.join('\n').match(FUNCTION_CALLED_REGEX)) { return false; }
 
     let existingFunctions: {start: number, end: number, openBrackets: number, closeBrackets: number, closed: boolean}[] = [];
     let functionCalls: number[] = [];
@@ -34,7 +39,6 @@ export const isFunctionCalledBeforeInitialized = (lines: string[], line: string)
                 }
             });
         }
-        const FUNCTION_CALLED_REGEX = new RegExp(`(.*[^.a-zA-Z0-9$_]|^| )${FUNCTION_NAME[0]}\\b`);
         if(line.match(FUNCTION_CALLED_REGEX)) { functionCalls.push(i); }
     });
     if(!functionCalls.length) { return false; }
@@ -67,15 +71,4 @@ export const isFunctionUsesThis = (lines: string[]): boolean => {
         
     }
     return false;
-};
-
-export const isOnlyOneLine = (content: string): boolean => {
-    const lines = content.split('\n').filter(line => !!line.match(/.*[^ ]/));
-    if(lines.length !== 3) { return false; }
-    if(
-        lines[0].replace(/ +/g, '').length > 1 ||
-        lines[1].match(/^(| +)(if\b|for\b|while\b|switch\b)/) || 
-        !lines[2].replace(/ +/g, '').match(/^\}()|\);\}\)$/)
-    ) { return false; }
-    return true;
 };

@@ -1,4 +1,4 @@
-import { getFunctionArgs } from "./get";
+import { getFunctionArgs, getFunctionCloseBracketsIndex } from "./get";
 import { syntaxFlag } from "./main";
 import { isOneParameterOnly } from "./match";
 
@@ -38,13 +38,14 @@ export const turnToArrow = (line: string, lines: string[]): string[] => {
 };
 
 export const turnToOneLine = (content: string, line: string) => {
-    const lines = content.replace(/( +|^)return\b/, '').split('\n').filter(line => !!line.match(/.*[^ ]/));
-    const close = lines[2].replace(/\}/, '').replace(/ /g, '');
-
-    content = close ? lines[1].replace(/;(| +)$/,'') + close : lines[1];
-
-    if(content.match(/^(| +)\{/)) { content = `(${content.replace(/^  +/, ' ').replace(/;/, '')});`; }
-    return `${line.split('=>')[0]}=>${content.replace(/^  +/, ' ')};`.replace(/;+/, ';');
+    // Need to get the exact position of the closed brackets in case that there are second argument with curly brackets after the function
+    const END_INDEX = getFunctionCloseBracketsIndex(content);
+    content = content.slice(0, END_INDEX) + content.slice(END_INDEX+1, content.length);
+    content = content.replace(/( +|^)return\b/, '').replace(/^{/, '').replace(/\n/g, '').replace(/;/, '');
+    if(content.match(/^(| +)\{/)) { content = ` (${content.replace(/^  +/, ' ').replace(/ +{/, '{').replace(/} +$/, '}')});`; }
+    let result = `${line.split('=>')[0]}=>${content.replace(/^  +/, ' ')};`.replace(/;+/, ';').replace(/ +;( +|)$/, ';').replace(/ +\)/, ')');
+    if(result.match(/=>;$/)) { result = result.replace(/;$/, ' {};'); }
+    return result;
 };
 
 export const exportDefaultAndModuleExports = (index: number, length: number, lines: string[], exports: RegExpMatchArray | null): string => {

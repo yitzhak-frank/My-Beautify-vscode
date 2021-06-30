@@ -28,16 +28,18 @@ export const getFunctionArgs = (lines: string[]): {args: string, after: string} 
     return { args: functionArgs, after: afterArgs};
 };
 
-export const getFunctionContent = (lines: string[]): string => {
+export const getFunctionContent = (lines: string[]): {content: string, comment: boolean} => {
     let openBrackets: number = 0;
     let closeBrackets: number = 0;
     let content: string = '';
+    let comment: boolean = false;
 
     for(let line of lines) {
 
         if(isComment(line)) {
             const br = line.match(/\n/g); 
             content += br ? br.join('') + '\n' : '\n';
+            comment = true;
             continue; 
         }
 
@@ -55,5 +57,17 @@ export const getFunctionContent = (lines: string[]): string => {
         content += '\n';
     }
     if(openBrackets - closeBrackets) { syntaxFlag.wrong = true; }
-    return content;
+    return { content, comment};
+};
+
+export const getFunctionCloseBracketsIndex = (content: string): number => {
+    let openBrackets: number = 0;
+    let closeBrackets: number = 0;
+    for(let i = 0; i < content.length; i++) {
+        (content[i] === '{' && openBrackets++) || (content[i] === '}' && closeBrackets++);
+        if(openBrackets && !(openBrackets - closeBrackets)) {
+            return i;
+        }
+    }
+    return -1;
 };

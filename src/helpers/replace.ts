@@ -1,3 +1,5 @@
+import { isMultilineCommentEnds, isMultilineCommentStarts } from "./match";
+
 export const removeMultipleSpaces = (line: string): string => {
 	let start = '', i = 1;
 	while(line[i] === ' ') { start += line[i]; i++; };
@@ -10,8 +12,8 @@ export const filterMultilineCommentsToOneLine = (lines: string[]): string[] => {
 	let newLine: string = '';
 
 	lines.forEach(line => {
-		if(line.match(/^( +|)\/\*/)) { comment = true; }
-		else if(line.match(/\*\//)) { comment = false; }
+		if(isMultilineCommentStarts(line)) { comment = true; }
+		if(isMultilineCommentEnds(line)) { comment = false; }
 		newLine += newLine ? '\n' + line : line;
 		if(!comment) { 
 			newLines.push(newLine);
