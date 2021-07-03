@@ -23,3 +23,5 @@ export const filterMultilineCommentsToOneLine = (lines: string[]): string[] => {
 
 	return newLines;
 };
+
+export const addEscape = (str: string) => str.replace(/\(|\)|\+|\||\[|\]|\*|\.\?\!|\$|\:/g, (match: string): string => `\\${match}`);

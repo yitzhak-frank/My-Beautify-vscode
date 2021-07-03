@@ -4,6 +4,7 @@ import arrowShot from './commands/arrowShot/main';
 import varsRename from './commands/varsRename';
 import * as vscode from 'vscode';
 import orderImports from './commands/orderImports';
+import loneline from './commands/loneline';
 
 export const activate = (context: vscode.ExtensionContext) => {
 
@@ -15,7 +16,7 @@ export const activate = (context: vscode.ExtensionContext) => {
 
 			const lines: string[]    = editor.document.getText().split('\n');
 			const length: number     = lines.length;
-			const newContent: string = myBeautify(lines).join('\n');
+			const newContent: string = beautify(lines).join('\n');
 			
 			editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, length, 0), newContent));
 		}),
@@ -39,6 +40,17 @@ export const activate = (context: vscode.ExtensionContext) => {
 			const newContent: string  = imports.join('\n') + '\n';
 			
 			if(imports.length < 2) { return; }
+			editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, length, 0), newContent));
+		}),
+
+		vscode.commands.registerCommand('myBeautify.loneline', () => {
+			const editor = vscode.window.activeTextEditor;
+			if(!editor) { return; }
+
+			const lines: string[]    = editor.document.getText().split('\n');
+			const length: number     = lines.length;
+			const newContent: string = loneline(lines).join('\n');
+			
 			editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, length, 0), newContent));
 		}),
 
@@ -68,19 +80,20 @@ export const activate = (context: vscode.ExtensionContext) => {
 
 			const lines: string[]    = editor.document.getText().split('\n');
 			const length: number     = lines.length;
-			const newContent: string = arrowShot(lines, length).join('\n');
+			const newContent: string = arrowShot(lines).join('\n');
 			
 			editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, length, 0), newContent));
 		}),
 	);
 };
 
-const myBeautify = (content: string[]): string[] => {
-	spaceify(content);
+const beautify = (content: string[]): string[] => {
 	orderImports(content);
 	content = varsRename(content.join('\n')).split('\n');
 	content = constify(content);
-	content = arrowShot(content, content.length);
+	content = spaceify(content);
+	content = arrowShot(content);
+	content = loneline(content);
 	return content;
 };
 

@@ -6,10 +6,10 @@ import { isAnonymous, isAssignedToVariable, isFunctionCalledBeforeInitialized, i
 
 export const syntaxFlag: { wrong: boolean } = { wrong: false };
 
-const arrowShot = (lines: string[], length: number): string[] => {
+const arrowShot = (lines: string[]): string[] => {
     // Start from the end to be able to turn two functions into one line when nested.
     lines = filterMultilineCommentsToOneLine(lines);
-    length = lines.length;
+    const length = lines.length;
     lines.map(line => line).reverse().forEach((line, i) => {
         syntaxFlag.wrong = false;
         const index = length - (i+1);

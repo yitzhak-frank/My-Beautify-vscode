@@ -1,10 +1,10 @@
 import { removeMultipleSpaces } from "../helpers/replace";
 
-const spaceify = (content: string[]): string[] => {
+const spaceify = (lines: string[]): string[] => {
 	let longest: number = 0;
 	let group: string[] = [];
 	
-	content.forEach((line, i) => {
+	lines.forEach((line, i) => {
 		if(line.match(/^( +|)(var|let|const)\b( +)[A-Za-z_$0-9]+( +=|=)/) && !line.match(/=>|=( +|)function\b/)) {
 
 			line = removeMultipleSpaces(line.replace(/=/, ' = '));
@@ -24,14 +24,14 @@ const spaceify = (content: string[]): string[] => {
 					for(let i = 0; i < longest - length; i++) { parts[0] += ' '; }
 
 					variable = parts[0] + '=' + parts[1];
-					content[i - (group.length - x)] = variable;
+					lines[i - (group.length - x)] = variable;
 				});
 			} 
 			group = [];
 			longest = 0;
 		}
 	});
-	return content;
+	return lines;
 };
 
 export default spaceify;

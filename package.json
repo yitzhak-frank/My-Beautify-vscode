@@ -6,7 +6,7 @@
 	"author": {"name": "Issac Frank", "email": "yitzhakfrank@gmail.com"},
 	"icon": "logo.png",
 	"repository": {"directory": "https://github.com/yitzhak-frank/vscode-myBeautify"},
-	"version": "0.2.14",
+	"version": "0.3.0",
 	"engines": {
 		"vscode": "^1.55.0"
 	},
@@ -17,6 +17,7 @@
 		"onCommand:myBeautify.beautify",
 		"onCommand:myBeautify.spaceify",
 		"onCommand:myBeautify.orderImports",
+		"onCommand:myBeautify.loneline",
 		"onCommand:myBeautify.varsRename",
 		"onCommand:myBeautify.constify",
 		"onCommand:myBeautify.arrowShot"
@@ -36,6 +37,10 @@
 				"command": "myBeautify.orderImports",
 				"category": "My Beautify",
 				"title": "Order Imports"
+			},{
+				"command": "myBeautify.loneline",
+				"category": "My Beautify",
+				"title": "Loneline"
 			},{
 				"command": "myBeautify.varsRename",
 				"category": "My Beautify",
