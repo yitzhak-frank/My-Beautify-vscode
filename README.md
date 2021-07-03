@@ -28,7 +28,7 @@ This extension designed to beautify Javascript code according to my syntax rules
 - **_Arrow Shot_** _command does not work if there are two or more function declarations in the same line._
 - **_Loneline_** _command does not work if the length of the new line will be higher than 135._
 
-- _All comands does not apply when it will cose an error._
+- _All comands does not apply when it will cause an error._
   _For exsample if you call a function before initialize, arrow shot command will not replace that with arrow function._
   _So if some command does not work, make sure your code suitable to the changes you want_
 
