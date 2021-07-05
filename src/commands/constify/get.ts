@@ -77,13 +77,16 @@ export const getAllVariables = (lines: string[]): string[] => {
                     }
                 }
             } else {
-                const STRINGS_VAL = Object.values(strings), BRACKETS_VAL = Object.values(brackets);
+                const STRINGS_VAL  = Object.values(strings);
+                const BRACKETS_VAL = Object.values(brackets);
+                const NO_STRING    = STRINGS_VAL.every(val => !val);
+                const NO_BRACKETS  = BRACKETS_VAL.every(type => Array.from(new Set(Object.values(type))).length < 2);
 
                 if(Object.keys(strings).includes(char)) { 
-                    if(strings[char] || STRINGS_VAL.every(val => !val)) {
+                    if(strings[char] || NO_STRING) {
                         strings[char] = !strings[char]; 
                     }
-                } else {
+                } else if(NO_STRING) {
                     const type = BRACKETS_VAL.find(type => Object.keys(type).includes(char));
                     if(type) {
                         type[char] += 1;
@@ -92,7 +95,7 @@ export const getAllVariables = (lines: string[]): string[] => {
                         }
                     }
                 } 
-                if(STRINGS_VAL.every(val => !val) && BRACKETS_VAL.every(type => Array.from(new Set(Object.values(type))).length < 2)) { 
+                if(NO_STRING && NO_BRACKETS) { 
                     if(char === ',') { 
                         state.isValue = false; 
                     }
