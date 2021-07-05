@@ -1,5 +1,5 @@
 import { isComment } from "../../helpers/match";
-import { syntaxFlag } from "./main";
+import { syntax } from "./main";
 
 export const getFunctionLinesNumber = (content: string): number => content.split('\n').length;
 
@@ -24,7 +24,7 @@ export const getFunctionArgs = (lines: string[]): {args: string, after: string} 
         if(closeBrackets && (closeBrackets === openBrackets)) { break; }
         functionArgs += '\n';
     }
-    if(openBrackets - closeBrackets) { syntaxFlag.wrong = true; }
+    if(openBrackets - closeBrackets) { syntax.flag = true; }
     return { args: functionArgs, after: afterArgs};
 };
 
@@ -56,7 +56,7 @@ export const getFunctionContent = (lines: string[]): {content: string, comment: 
         if(closeBrackets && (openBrackets === closeBrackets)) { break; }
         content += '\n';
     }
-    if(openBrackets - closeBrackets) { syntaxFlag.wrong = true; }
+    if(openBrackets - closeBrackets) { syntax.flag = true; }
     return { content, comment};
 };
 

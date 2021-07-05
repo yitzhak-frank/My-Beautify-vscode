@@ -1,5 +1,5 @@
 import spaceify from './commands/spaceify';
-import constify from './commands/constify';
+import constify from './commands/constify/main';
 import arrowShot from './commands/arrowShot/main';
 import varsRename from './commands/varsRename';
 import * as vscode from 'vscode';

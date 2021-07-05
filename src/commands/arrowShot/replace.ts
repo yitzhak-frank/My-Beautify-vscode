@@ -1,6 +1,6 @@
-import { getFunctionArgs, getFunctionCloseBracketsIndex } from "./get";
-import { syntaxFlag } from "./main";
+import { syntax } from "./main";
 import { isOneParameterOnly } from "./match";
+import { getFunctionArgs, getFunctionCloseBracketsIndex } from "./get";
 
 export const fixSelfInvoking = (line: string): string => line.replace(/\}( +|)\(( +|)\)( +|)\)/, '})()');
 
@@ -8,7 +8,7 @@ export const assignFunctionToVariable = (line: string): string => {
     if(line.match(/=( +|)function\b/)) { return line; }
     const FUNCTION_NAME = line.match(/(?<=\bfunction\s)(\w+)/);
     if(!FUNCTION_NAME) { 
-        syntaxFlag.wrong = true;
+        syntax.flag = true;
         return line; 
     }
     return line.replace(new RegExp(`function\\b +${FUNCTION_NAME[0]}`), `const ${FUNCTION_NAME[0]} = function`);
@@ -17,8 +17,8 @@ export const assignFunctionToVariable = (line: string): string => {
 export const turnToArrow = (line: string, lines: string[]): string[] => {
     const FUNCTION = line.match(/function\b( +|)/);
 
-    if(!FUNCTION) { syntaxFlag.wrong = true; }
-    if(syntaxFlag.wrong) { return [line]; }
+    if(!FUNCTION) { syntax.flag = true; }
+    if(syntax.flag) { return [line]; }
 
     let index = ((FUNCTION||[])[0]).length + ((FUNCTION||[]).index || 0);
     let { args, after } = getFunctionArgs([line.substring(index, line.length), ...lines]);

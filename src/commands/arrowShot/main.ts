@@ -4,14 +4,14 @@ import { getFunctionContent, getFunctionLinesNumber } from "./get";
 import { assignFunctionToVariable, exportDefaultAndModuleExports, fixSelfInvoking, turnToArrow, turnToOneLine } from "./replace";
 import { isAnonymous, isAssignedToVariable, isFunctionCalledBeforeInitialized, isFunctionUsesThis, isOnlyOneLine } from "./match";
 
-export const syntaxFlag: { wrong: boolean } = { wrong: false };
+export const syntax: { flag: boolean } = { flag: false };
 
 const arrowShot = (lines: string[]): string[] => {
     // Start from the end to be able to turn two functions into one line when nested.
     lines = filterMultilineCommentsToOneLine(lines);
     const length = lines.length;
     lines.map(line => line).reverse().forEach((line, i) => {
-        syntaxFlag.wrong = false;
+        syntax.flag = false;
         const index = length - (i+1);
 
         lines[index] = fixSelfInvoking(line);
@@ -53,7 +53,7 @@ const arrowShot = (lines: string[]): string[] => {
         const REST_OF_LINES = lines.slice(index+1, index+1 + FUNCTION_CONTENT.split('\n').length);
         const LINES_CHANGED = turnToArrow(line, REST_OF_LINES);
 
-        if(syntaxFlag.wrong) { return; }
+        if(syntax.flag) { return; }
 
         lines.splice(index, LINES_CHANGED.length, ...LINES_CHANGED);
 
