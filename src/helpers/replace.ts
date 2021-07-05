@@ -1,9 +1,8 @@
 import { isMultilineCommentEnds, isMultilineCommentStarts } from "./match";
 
 export const removeMultipleSpaces = (line: string): string => {
-	let start = '', i = 1;
-	while(line[i] === ' ') { start += line[i]; i++; };
-	return start + line.replace(/  +/g, ' ');
+	let start = (line.match(/^ +/)||[''])[0];
+	return start + line.replace(/^ +/, '').replace(/  +/g, ' ');
 };
 
 export const filterMultilineCommentsToOneLine = (lines: string[]): string[] => {
@@ -25,3 +24,20 @@ export const filterMultilineCommentsToOneLine = (lines: string[]): string[] => {
 };
 
 export const addEscape = (str: string) => str.replace(/\(|\)|\+|\||\[|\]|\*|\.\?\!|\$|\:/g, (match: string): string => `\\${match}`);
+
+interface Strings { [key: string]: boolean; };
+
+export const filterString = (str: string): string => {
+	const stringStarts: Strings = { '"': false, "'": false, "`": false };
+	let newStr: string = '';
+	for(let i = 0; i < str.length; i++) {
+		if(stringStarts[str[i]]) { stringStarts[str[i]] = false; }
+		else if(Object.keys(stringStarts).includes(str[i])) { 
+			stringStarts[str[i]] = true; 
+			newStr += str[i];
+		}
+		if(Object.values(stringStarts).some(val => val)) { continue; }
+		newStr += str[i];
+	}
+	return newStr;
+};

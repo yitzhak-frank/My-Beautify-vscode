@@ -4,7 +4,7 @@ export const isAssignedToVariable = (line: string, isAssign: boolean) => isAssig
 
 export const isOneParameterOnly = (line: string): boolean => !line.match(/,/g) && !((line.match(/\(/g)?.length || 2) > 1) && !line.match(/\(( +|)\)/);
 
-export const isOnlyOneLine = (content: string): boolean => !!content.replace(/ +/g, '').match(/^{(\n+|).*(\n+|)}.*[^\n]$/);
+export const isOnlyOneLine = (content: string): boolean => !!content.replace(/ +/g, '').match(/^{(\n+|).*(\n+|)}(.*[^\n]|)$/) && !content.match(/((.*[^.a-zA-Z0-9$_]|^| )(if|for|while|do|else)\b)/);
 
 export const isFunctionCalledBeforeInitialized = (lines: string[], line: string): boolean => {
     const FUNCTION_NAME = line.match(/(?<=\bfunction\s)(\w+)/);
