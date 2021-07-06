@@ -1,4 +1,4 @@
-import { constant, scopes } from "./main";
+import { constant } from "./main";
 
 export const isNoValueAssign = (line: string, variable: string): boolean => {
     const VALUE_ASSIGN = new RegExp(`( ${variable})(=| +=)`);
@@ -9,17 +9,22 @@ export const isNoValueAssign = (line: string, variable: string): boolean => {
     }
 };
 
-export const isScopeEnded = (line: string, scope: string, variables: string[]): boolean => {
-    const openBrackets = line.match(/{/g) || [], closeBrackets = line.match(/}/g) || [];
-    scopes[scope] += (closeBrackets.length - openBrackets.length);
+export const isScopeEnded = (line: string, scope: {open: number, close: number}, variables?: string[]): boolean => {
+    const openBrackets = (line.match(/{/g)||[]).length, closeBrackets = (line.match(/}/g)||[]).length;
+    scope.open += openBrackets;
+    scope.close += closeBrackets;
 
-    if (scopes[scope] >= 0) { 
+    if (scope.open && (scope.close >= scope.open)) { 
         const indexes: number[] = [];
         line.split('').forEach((char: string, i: number) => {
             if(char === '}') { indexes.push(i); }; 
         });
-        line = line.slice(0, indexes[closeBrackets.length - scopes[scope]]);
-        isVariableValueChange(line, variables);
+        if(variables) {
+            line = line.slice(0, indexes[closeBrackets - (scope.close - scope.open)]);
+            isVariableValueChange(line, variables);
+        }
+        scope.open = 0;
+        scope.close = 0;
         return true; 
     } else { return false; }
 };
@@ -41,5 +46,3 @@ export const isVariableValueChange = (line: string, variables: string[]): boolea
     }
     return false;
 };
-
-export const isThereAreMultipleVariables = (line: string, next: string): boolean => !(!line.match(/,(?![^(]*\))/g) && !next.match(/^(| +),/));

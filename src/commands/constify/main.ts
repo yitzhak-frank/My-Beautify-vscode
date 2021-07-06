@@ -1,38 +1,58 @@
 import { isComment } from "../../helpers/match";
 import { getAllVariables } from "./get";
-import { filterMultilineCommentsToOneLine } from "../../helpers/replace";
-import { isNoValueAssign, isScopeEnded, isThereAreMultipleVariables, isVariableValueChange } from "./match";
+import { filterMultilineCommentsToOneLine, filterRegex, filterString } from "../../helpers/replace";
+import { isNoValueAssign, isScopeEnded, isVariableValueChange } from "./match";
 
-export const IS_LINE_HAS_FUNCTION_REGEX = /((^| +|\()function\b)|=>/, 
-    VARIABLE_NAME_REGEX = /(?<=\b(let|var)\s)(\w+)/,
-    constant = { flag: true },
-    scopes: { [inner: string]: number, outer: number } = { inner: 0, outer: 0 };
+export const constant = { flag: true };
+
+const IS_LINE_HAS_FUNCTION_REGEX = /((^|\(| |:|\?|=|\||&)function\b)|=>/, VARIABLE_NAME_REGEX = /(?<=\b(let|var)\s)(\w+)/;
 
 let isInOuterFun: boolean;
+let state: {
+    declaretionScope: {
+        declaretionCheck: {
+            open: number,
+            close: number
+        },
+        valueChangeCheck: {
+            open: number,
+            close: number
+        }
+    },
+    valueChangeScope: {
+        open: number,
+        close: number
+    }
+};
 
 const constify = (lines: string[]): string[] => {
+    initState();
     lines = filterMultilineCommentsToOneLine(lines);
+    const FILTERED_LINES = lines.map(line => filterString(filterRegex(line)));
+
     lines.forEach((line, i) => {
 
-        if(!isInOuterFun) { isInOuterFun = !!line.match(IS_LINE_HAS_FUNCTION_REGEX); }
+        if(isComment(line)) { return; }
+
+        if(!isInOuterFun && line.match(IS_LINE_HAS_FUNCTION_REGEX)) { 
+            isInOuterFun = true; 
+            state.declaretionScope.valueChangeCheck.open++;
+        }
+        if(isInOuterFun && isScopeEnded(line, state.declaretionScope.declaretionCheck)) { isInOuterFun = false; }
 
         const declaration = line.match(/^(| +)(let\b|var\b)/);
 
-        if(!declaration || isComment(line)) { return; }
+        if(!declaration) { return; }
 
         constant.flag = true;
 
-        let variables: string[];
-
-        if(isThereAreMultipleVariables(line, lines[i+1] || '')) {
-            variables = getAllVariables(lines.slice(i, lines.length));
-            if(!constant.flag) { return; }
-        } else { variables = [(line.match(VARIABLE_NAME_REGEX) || [''])[0]]; }
+        const variables = getAllVariables(FILTERED_LINES.slice(i, lines.length));
+        if(!constant.flag) { return; }
 
         if(!variables[0]) { return; }
         if(!(variables.length-1) && isNoValueAssign(line, variables[0])) { return; }
 
-        const LINES_AFTER = lines.slice(i + variables.length, lines.length).filter(line => !line.match(/^( +|)\/\//));
+        const LINES_AFTER = FILTERED_LINES.slice(i + variables.length, lines.length).filter(line => !line.match(/^( +|)\/\//));
         if(!(variables.length-1)) { LINES_AFTER.unshift(line.substring(line.indexOf('='), line.length)); }
         
         checkLinesAfter(LINES_AFTER, variables);
@@ -46,7 +66,7 @@ const constify = (lines: string[]): string[] => {
 };
 
 const checkLinesAfter = (lines: string[], variables: string[]) => {
-    scopes.inner = 0;
+    state.valueChangeScope = { open: 0, close: 0 };
     // Is new function starts
     let isInInnerFun: boolean = false;
     // New function variables with the same name as the global variables
@@ -56,26 +76,39 @@ const checkLinesAfter = (lines: string[], variables: string[]) => {
         if(isComment(line)) { continue; }
 
         if(line.match(IS_LINE_HAS_FUNCTION_REGEX)) { isInInnerFun = true; }
-        if(isInOuterFun) { 
-            if(isScopeEnded(line, 'outer', variables)) { 
-                isInOuterFun = false;
-                scopes.outer = 0;
-                continue; 
-            } 
-        }
+        if(isInOuterFun && isScopeEnded(line, state.declaretionScope.valueChangeCheck, variables)) { break; }
         if(isInInnerFun) { 
             const variable = (line.match(VARIABLE_NAME_REGEX)||[''])[0];
             if(variables.includes(variable)) { 
                 variables = variables.filter(variable => innerFunVars.includes(variable));
                 innerFunVars.push(variable); 
             }
-            if(isScopeEnded(line, 'inner', variables)) { 
+            if(isScopeEnded(line, state.valueChangeScope, variables)) { 
                 isInInnerFun = false; 
                 variables.push(...innerFunVars);
             } 
         }
         if(isVariableValueChange(line, variables)) { break; }
     }
+};
+
+const initState = () => {
+    state = {
+        declaretionScope: {
+            declaretionCheck: {
+                open: 0,
+                close: 0
+            },
+            valueChangeCheck: {
+                open: 0,
+                close: 0
+            }
+        },
+        valueChangeScope: {
+            open: 0,
+            close: 0
+        }
+    };
 };
 
 export default constify;

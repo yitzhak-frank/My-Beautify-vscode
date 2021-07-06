@@ -41,3 +41,11 @@ export const filterString = (str: string): string => {
 	}
 	return newStr;
 };
+
+export const filterRegex = (str: string): string => {
+	const IS_STR_CONTAINS_REGEX = str.match(/(?<==|\||\+|\?|:|,|^|&| )\/[^\/]+(\/)/g);
+	if(IS_STR_CONTAINS_REGEX) { 
+		IS_STR_CONTAINS_REGEX.forEach(match => str = str.replace(match, '_$_REGEX_$_')); 
+	}
+	return str;
+};

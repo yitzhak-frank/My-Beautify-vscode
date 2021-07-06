@@ -1,4 +1,5 @@
 import { isComment } from "../../helpers/match";
+import { filterRegex } from "../../helpers/replace";
 import { constant } from "./main";
 import { isVariableValueChange } from "./match";
 
@@ -17,9 +18,6 @@ interface VarsState {
             curly: {
                 [key: string]: number
             }
-        },
-        strings: {
-            [key: string]: boolean
         }
     }
 }
@@ -34,11 +32,6 @@ export const getAllVariables = (lines: string[]): string[] => {
                 round: {'(': 0,')': 0 }, 
                 curly: {'{': 0,'}': 0 }, 
                 square: {'[': 0,']': 0 }
-            },
-            strings: {
-                '"': false,
-                "`": false,
-                "'": false
             }
         }
     };
@@ -47,16 +40,22 @@ export const getAllVariables = (lines: string[]): string[] => {
     let variable: string = '';
 
     for(let i = 0; i < lines.length; i++) {
+        // If new line starts without comma stop.
         if(!state.isComma && !lines[i].match(/^( +|)(,|$)/) && i) { break; }
         state.isComma = !!lines[i].match(/,( +|)$/);
 
-        const line = i ? lines[i] : (lines[i].match(/(?<=\b(let|var)\s).*/)||[''])[0];
         if(isComment(lines[i])) { continue; }
+
+        // Remove the var/let from the first line.
+        let line = i ? lines[i] : (lines[i].match(/(?<=\b(let|var)\s).*/)||[''])[0];
         
+        // If line has regex dont calculate the brackets and strings in it.
+        line = filterRegex(line);
+
         for(let x = 0; x < line.length; x++) {
 
             const char = line[x];
-            const { value: { brackets, strings }} = state;
+            const { value: { brackets }} = state;
 
             if(!state.isValue) {
                 if(char === ',' && state.isDeclaration) {
@@ -77,25 +76,10 @@ export const getAllVariables = (lines: string[]): string[] => {
                     }
                 }
             } else {
-                const STRINGS_VAL  = Object.values(strings);
                 const BRACKETS_VAL = Object.values(brackets);
-                const NO_STRING    = STRINGS_VAL.every(val => !val);
                 const NO_BRACKETS  = BRACKETS_VAL.every(type => Array.from(new Set(Object.values(type))).length < 2);
 
-                if(Object.keys(strings).includes(char)) { 
-                    if(strings[char] || NO_STRING) {
-                        strings[char] = !strings[char]; 
-                    }
-                } else if(NO_STRING) {
-                    const type = BRACKETS_VAL.find(type => Object.keys(type).includes(char));
-                    if(type) {
-                        type[char] += 1;
-                        if(Array.from(new Set(Object.values(type))).length < 2) {
-                            for(let i in type) { type[i] = 0; }
-                        }
-                    }
-                } 
-                if(NO_STRING && NO_BRACKETS) { 
+                if(NO_BRACKETS) { 
                     if(char === ',') { 
                         state.isValue = false; 
                     }

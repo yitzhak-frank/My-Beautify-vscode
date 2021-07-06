@@ -105,7 +105,7 @@ const isAlreadyLoneine = (lines: string[]): boolean => {
     return true;
 };
 
-const isArrowFunctionCanBeOneLine = (content: string): boolean => !content.match(/(.*[^.a-zA-Z0-9$_]|^| )(if|for|while|do)\b/);
+const isArrowFunctionCanBeOneLine = (content: string): boolean => !content.match(/(.*[^.a-zA-Z0-9$_]|^| )(if|for|while|do|let|var|const)\b/);
 
 const adjustContentToOneLineFunction = (content: string): string => {
     if(!content.match(/(.*[^.a-zA-Z0-9$_]|^| )return\b/)) { return content; }
