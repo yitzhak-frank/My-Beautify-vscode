@@ -1,3 +1,5 @@
-const varsRename = (content: string): string => content.replace(/(.*[^.a-zA-Z0-9$_])var\b/g, (match: string) => match.replace(/var\b/, 'let'));
+import { VAR_DECLARETION_G, VAR_WORD } from "../helpers/regex";
+
+const varsRename = (content: string): string => content.replace(VAR_DECLARETION_G, (match: string) => match.replace(VAR_WORD, 'let'));
 
 export default varsRename;

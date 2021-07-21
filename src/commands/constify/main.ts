@@ -1,112 +1,111 @@
 import { isComment } from "../../helpers/match";
+import { FilteredLine } from "../../interfaces/main";
 import { getAllVariables } from "./get";
-import { filterMultilineCommentsToOneLine, filterRegex, filterString } from "../../helpers/replace";
+import { getFilteredLines } from "../../helpers/get";
+import { filterMultilineCommentsToOneLine } from "../../helpers/replace";
 import { isNoValueAssign, isScopeEnded, isVariableValueChange } from "./match";
+import { FUNCTION_DECLARETION, ONE_LINE_COMMENT, ONE_SPACE_OR_MORE_G, VAR_OR_LET_DECLARETION, VAR_OR_LET_VARIABLE_NAME } from "../../helpers/regex";
 
 export const constant = { flag: true };
 
-const IS_LINE_HAS_FUNCTION_REGEX = /((^|\(| |:|\?|=|\||&)function\b)|=>/, VARIABLE_NAME_REGEX = /(?<=\b(let|var)\s)(\w+)/;
-
-let isInOuterFun: boolean;
-let state: {
+interface ScopesState {
+    scopesVariables: string[][]
     declaretionScope: {
-        declaretionCheck: {
-            open: number,
-            close: number
-        },
-        valueChangeCheck: {
-            open: number,
-            close: number
-        }
+        scopeIndex: number
+        scopes: [{ open: number, close: number }]
     },
     valueChangeScope: {
-        open: number,
-        close: number
+        scopeIndex: number
+        scopes: [{ open: number, close: number }]
     }
-};
+}
+
+let scopesState: ScopesState;
 
 const constify = (lines: string[]): string[] => {
     initState();
     lines = filterMultilineCommentsToOneLine(lines);
-    const FILTERED_LINES = lines.map(line => filterString(filterRegex(line)));
+    const FILTERED_LINES: FilteredLine[] = getFilteredLines(lines);
 
     lines.forEach((line, i) => {
 
-        if(isComment(line)) { return; }
+        if(isComment(line)) return;
 
-        if(!isInOuterFun && line.match(IS_LINE_HAS_FUNCTION_REGEX)) { 
-            isInOuterFun = true; 
-            state.declaretionScope.valueChangeCheck.open++;
-        }
-        if(isInOuterFun && isScopeEnded(line, state.declaretionScope.declaretionCheck)) { isInOuterFun = false; }
+        const { declaretionScope } = scopesState;
 
-        const declaration = line.match(/^(| +)(let\b|var\b)/);
+        if(line.match(FUNCTION_DECLARETION)) declaretionScope.scopeIndex++;
+        const { scopes, scopeIndex } = declaretionScope;
+        scopeIndex && !scopes[scopeIndex -1] && (scopes[scopeIndex -1] = { open: 0, close: 0 });
+        if(scopeIndex && isScopeEnded(line, scopes[scopeIndex -1])) declaretionScope.scopeIndex--;
 
-        if(!declaration) { return; }
+        const declaretion = line.match(VAR_OR_LET_DECLARETION);
+
+        if(!declaretion) return;
 
         constant.flag = true;
 
         const variables = getAllVariables(FILTERED_LINES.slice(i, lines.length));
-        if(!constant.flag) { return; }
+        if(!constant.flag) return;
 
-        if(!variables[0]) { return; }
-        if(!(variables.length-1) && isNoValueAssign(line, variables[0])) { return; }
+        if(!variables[0]) return;
+        if(!(variables.length-1) && isNoValueAssign(line, variables[0])) return;
 
-        const LINES_AFTER = FILTERED_LINES.slice(i + variables.length, lines.length).filter(line => !line.match(/^( +|)\/\//));
-        if(!(variables.length-1)) { LINES_AFTER.unshift(line.substring(line.indexOf('='), line.length)); }
+        const LINES_AFTER = FILTERED_LINES.slice(i + variables.length, lines.length).filter(line => !line.newStr.match(ONE_LINE_COMMENT));
+        if(!(variables.length-1)) LINES_AFTER.unshift(...getFilteredLines([line.substring(line.indexOf('='), line.length)]));
         
         checkLinesAfter(LINES_AFTER, variables);
 
-        if(constant.flag) { 
-            lines[i] = line.replace(declaration[0].replace(/ +/, ''), 'const'); 
-        }
+        if(constant.flag) lines[i] = line.replace(declaretion[0].replace(ONE_SPACE_OR_MORE_G, ''), 'const');
     });
 
     return lines;
 };
 
-const checkLinesAfter = (lines: string[], variables: string[]) => {
-    state.valueChangeScope = { open: 0, close: 0 };
-    // Is new function starts
-    let isInInnerFun: boolean = false;
-    // New function variables with the same name as the global variables
-    const innerFunVars: string[] = [];
-
+const checkLinesAfter = (lines: FilteredLine[], variables: string[]) => {
+    const { scopesVariables, valueChangeScope, declaretionScope } = scopesState;
+    scopesVariables.splice(0, scopesVariables.length);
+    
     for(let line of lines) {
-        if(isComment(line)) { continue; }
+        const { newStr: filteredLine } = line;
+        if(isComment(filteredLine)) continue;
+        if(filteredLine.match(FUNCTION_DECLARETION)) valueChangeScope.scopeIndex++;
 
-        if(line.match(IS_LINE_HAS_FUNCTION_REGEX)) { isInInnerFun = true; }
-        if(isInOuterFun && isScopeEnded(line, state.declaretionScope.valueChangeCheck, variables)) { break; }
-        if(isInInnerFun) { 
-            const variable = (line.match(VARIABLE_NAME_REGEX)||[''])[0];
-            if(variables.includes(variable)) { 
-                variables = variables.filter(variable => innerFunVars.includes(variable));
-                innerFunVars.push(variable); 
-            }
-            if(isScopeEnded(line, state.valueChangeScope, variables)) { 
-                isInInnerFun = false; 
-                variables.push(...innerFunVars);
-            } 
+        const { scopes: V_SCOPES, scopeIndex: V_INDEX } = valueChangeScope;
+        const { scopes: D_SCOPES, scopeIndex: D_INDEX } = declaretionScope;
+
+        if(D_INDEX && isScopeEnded(filteredLine, D_SCOPES[D_INDEX -1])) { 
+            declaretionScope.scopeIndex--; 
+            break;
         }
-        if(isVariableValueChange(line, variables)) { break; }
+        if(V_INDEX) { 
+            !V_SCOPES[V_INDEX -1] && (V_SCOPES[V_INDEX -1] = { open: 0, close: 0 });
+            !scopesVariables[V_INDEX -1] && (scopesVariables[V_INDEX -1] = []);
+            
+            const variable = (filteredLine.match(VAR_OR_LET_VARIABLE_NAME)||[''])[0];
+            if(variables.includes(variable)) { 
+                scopesVariables[V_INDEX -1].push(variable);
+                variables = variables.filter(variable => !scopesVariables[V_INDEX -1].includes(variable));
+            }
+            if(isScopeEnded(filteredLine, V_SCOPES[V_INDEX -1], variables)) { 
+                valueChangeScope.scopeIndex--; 
+                variables = (variables.concat((scopesVariables[V_INDEX -1]||[]).filter(variable => !variables.includes(variable))));
+                scopesVariables[V_INDEX -1].splice(0, scopesVariables[V_INDEX -1].length);
+            }
+        }
+        if(isVariableValueChange(filteredLine, variables)) break;
     }
 };
 
 const initState = () => {
-    state = {
+    scopesState = {
+        scopesVariables: [],
         declaretionScope: {
-            declaretionCheck: {
-                open: 0,
-                close: 0
-            },
-            valueChangeCheck: {
-                open: 0,
-                close: 0
-            }
+            scopeIndex: 0,
+            scopes: [{ open: 0, close: 0 }]
         },
-        valueChangeScope: {
-            open: 0,
-            close: 0
+        valueChangeScope:{
+            scopeIndex: 0,
+            scopes: [{ open: 0, close: 0 }]
         }
     };
 };

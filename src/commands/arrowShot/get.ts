@@ -1,5 +1,6 @@
-import { isComment } from "../../helpers/match";
 import { syntax } from "./main";
+import { isComment } from "../../helpers/match";
+import { ANYTHING_BUT_VARIABLE_AUTHORIZED_CHARS, LINE_BREAKS_G } from "../../helpers/regex";
 
 export const getFunctionLinesNumber = (content: string): number => content.split('\n').length;
 
@@ -12,8 +13,8 @@ export const getFunctionArgs = (lines: string[]): {args: string, after: string} 
     for(let line of lines) {
         let index = 0;
         while(line[index]) {
-            if(line[index] === '(') { openBrackets++; } 
-            else if(line[index] === ')') { closeBrackets++; }
+            if(line[index] === '(') openBrackets++; 
+            else if(line[index] === ')') closeBrackets++;
             functionArgs += line[index];
             index++;
             if(closeBrackets && (closeBrackets === openBrackets)) { 
@@ -21,10 +22,10 @@ export const getFunctionArgs = (lines: string[]): {args: string, after: string} 
                 break; 
             }
         }
-        if(closeBrackets && (closeBrackets === openBrackets)) { break; }
+        if(closeBrackets && (closeBrackets === openBrackets)) break;
         functionArgs += '\n';
     }
-    if(openBrackets - closeBrackets) { syntax.flag = true; }
+    if(openBrackets - closeBrackets) syntax.flag = true;
     return { args: functionArgs, after: afterArgs};
 };
 
@@ -37,26 +38,26 @@ export const getFunctionContent = (lines: string[]): {content: string, comment: 
     for(let line of lines) {
 
         if(isComment(line)) {
-            const br = line.match(/\n/g); 
+            const br = line.match(LINE_BREAKS_G); 
             content += br ? br.join('') + '\n' : '\n';
             comment = true;
             continue; 
         }
 
         for(let i = 0; i < line.length; i++) {
-            if(line[i] === '{') { openBrackets++; }
-            else if(line[i] === '}') { closeBrackets++; }
+            if(line[i] === '{') openBrackets++;
+            else if(line[i] === '}') closeBrackets++;
             content += line[i];
             if(closeBrackets && (openBrackets === closeBrackets)) { 
-                const rest = line.substring(i+1, line.length).match(/^.*[^a-zA-Z0-9$_]/);
-                if(rest) { content += rest[0]; }
+                const rest = line.substring(i+1, line.length).match(ANYTHING_BUT_VARIABLE_AUTHORIZED_CHARS);
+                if(rest) content += rest[0];
                 break; 
             }
         };
-        if(closeBrackets && (openBrackets === closeBrackets)) { break; }
+        if(closeBrackets && (openBrackets === closeBrackets)) break;
         content += '\n';
     }
-    if(openBrackets - closeBrackets) { syntax.flag = true; }
+    if(openBrackets - closeBrackets) syntax.flag = true;
     return { content, comment};
 };
 
@@ -65,9 +66,7 @@ export const getFunctionCloseBracketsIndex = (content: string): number => {
     let closeBrackets: number = 0;
     for(let i = 0; i < content.length; i++) {
         (content[i] === '{' && openBrackets++) || (content[i] === '}' && closeBrackets++);
-        if(openBrackets && !(openBrackets - closeBrackets)) {
-            return i;
-        }
+        if(openBrackets && !(openBrackets - closeBrackets)) return i;
     }
     return -1;
 };

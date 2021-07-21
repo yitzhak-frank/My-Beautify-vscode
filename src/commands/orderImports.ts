@@ -1,3 +1,5 @@
+import { CURLY_BRACKETS_CLOSE_G, CURLY_BRACKETS_OPEN_G, IMPORT_STATEMENT, ONE_SPACE_OR_MORE_G, TWO_SPACE_OR_MORE_G } from "../helpers/regex";
+
 const orderImports = (content: string[]): { imports: string[], length: number} => {
 	let imports: string[] = [];
 	let length: number = 0;
@@ -5,7 +7,7 @@ const orderImports = (content: string[]): { imports: string[], length: number} =
 
 		line = spaceifyImportBrackets(line);
 
-		if(line.replace(/ +/g, '').length && (!line.startsWith('import') || (!line.includes("'") && !line.includes('"')))) {
+		if(line.replace(ONE_SPACE_OR_MORE_G, '').length && !line.match(IMPORT_STATEMENT)) {
 
 			if(imports.length > 1) {
 				length = imports.length;
@@ -34,11 +36,11 @@ const orderImportsByLength = (imports: string[]): void => {
 };
 
 const removeEmptyLines = (imports: string[]): string[] => {
-	imports = imports.filter(line => line.replace(/\s/g, '').length);
-	if(imports.length) { imports.push(''); }
+	imports = imports.filter(line => line.replace(ONE_SPACE_OR_MORE_G, '').length);
+	if(imports.length) imports.push('');
 	return imports;
 };
 
-const spaceifyImportBrackets = (line: string): string => line.replace(/{/g, ' { ').replace(/}/g, ' } ').replace(/  +/g, ' ');
+const spaceifyImportBrackets = (line: string): string => line.replace(CURLY_BRACKETS_OPEN_G, ' { ').replace(CURLY_BRACKETS_CLOSE_G, ' } ').replace(TWO_SPACE_OR_MORE_G, ' ');
 
 export default orderImports;

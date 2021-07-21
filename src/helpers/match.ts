@@ -1,5 +1,7 @@
-export const isComment = (line: string): boolean => !!line.match(/^( +|)(\/\/)|(\/\*)/);
+import { COMMENT, MULTILINE_COMMENT_ENDS, MULTILINE_COMMENT_STARTS } from "./regex";
 
-export const isMultilineCommentStarts = (line: string): boolean => !!line.match(/^( +|)\/\*/);
+export const isComment = (line: string): boolean => !!line.match(COMMENT);
 
-export const isMultilineCommentEnds = (line: string): boolean => !!line.match(/(\*\/)/);
+export const isMultilineCommentStarts = (line: string): boolean => !!line.match(MULTILINE_COMMENT_STARTS);
+
+export const isMultilineCommentEnds = (line: string): boolean => !!line.match(MULTILINE_COMMENT_ENDS);

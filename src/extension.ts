@@ -1,10 +1,10 @@
 import spaceify from './commands/spaceify';
 import constify from './commands/constify/main';
+import loneline from './commands/loneline';
 import arrowShot from './commands/arrowShot/main';
 import varsRename from './commands/varsRename';
 import * as vscode from 'vscode';
 import orderImports from './commands/orderImports';
-import loneline from './commands/loneline';
 
 export const activate = (context: vscode.ExtensionContext) => {
 
@@ -12,7 +12,7 @@ export const activate = (context: vscode.ExtensionContext) => {
 
 		vscode.commands.registerCommand('myBeautify.beautify', () => {
 			const editor = vscode.window.activeTextEditor;
-			if(!editor) { return; }
+			if(!editor) return;
 
 			const lines: string[]    = editor.document.getText().split('\n');
 			const length: number     = lines.length;
@@ -23,7 +23,7 @@ export const activate = (context: vscode.ExtensionContext) => {
 
 		vscode.commands.registerCommand('myBeautify.spaceify', () => {
 			const editor = vscode.window.activeTextEditor;
-			if(!editor) { return; }
+			if(!editor) return;
 
 			const lines: string[]    = editor.document.getText().split('\n');
 			const newContent: string = spaceify(lines).join('\n');
@@ -33,19 +33,19 @@ export const activate = (context: vscode.ExtensionContext) => {
 
 		vscode.commands.registerCommand('myBeautify.orderImports', () => {
 			const editor = vscode.window.activeTextEditor;
-			if(!editor) { return; }
+			if(!editor) return;
 
 			const lines: string[]     = editor.document.getText().split('\n');
 			const { imports, length } = orderImports(lines);
 			const newContent: string  = imports.join('\n') + '\n';
 			
-			if(imports.length < 2) { return; }
+			if(imports.length < 2) return;
 			editor.edit(editBuilder => editBuilder.replace(new vscode.Range(0, 0, length, 0), newContent));
 		}),
 
 		vscode.commands.registerCommand('myBeautify.loneline', () => {
 			const editor = vscode.window.activeTextEditor;
-			if(!editor) { return; }
+			if(!editor) return;
 
 			const lines: string[]    = editor.document.getText().split('\n');
 			const length: number     = lines.length;
@@ -56,7 +56,7 @@ export const activate = (context: vscode.ExtensionContext) => {
 
 		vscode.commands.registerCommand('myBeautify.varsRename', () => {
 			const editor = vscode.window.activeTextEditor;
-			if(!editor) { return; }
+			if(!editor) return;
 
 			const content: string    = editor.document.getText();
 			const newContent: string = varsRename(content);
@@ -66,7 +66,7 @@ export const activate = (context: vscode.ExtensionContext) => {
 
 		vscode.commands.registerCommand('myBeautify.constify', () => {
 			const editor = vscode.window.activeTextEditor;
-			if(!editor) { return; }
+			if(!editor) return;
 
 			const lines: string[]    = editor.document.getText().split('\n');
 			const newContent: string = constify(lines).join('\n');
@@ -76,7 +76,7 @@ export const activate = (context: vscode.ExtensionContext) => {
 
 		vscode.commands.registerCommand('myBeautify.arrowShot', () => {
 			const editor = vscode.window.activeTextEditor;
-			if(!editor) { return; }
+			if(!editor) return;
 
 			const lines: string[]    = editor.document.getText().split('\n');
 			const length: number     = lines.length;
