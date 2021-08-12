@@ -44,13 +44,13 @@ const constify = (lines: string[]): string[] => {
 
         constant.flag = true;
 
-        const variables = getAllVariables(FILTERED_LINES.slice(i, lines.length));
+        const { variables, length } = getAllVariables(FILTERED_LINES.slice(i, lines.length));
         if(!constant.flag) return;
 
         if(!variables[0]) return;
         if(!(variables.length-1) && isNoValueAssign(line, variables[0])) return;
 
-        const LINES_AFTER = FILTERED_LINES.slice(i + variables.length, lines.length).filter(line => !line.newStr.match(ONE_LINE_COMMENT));
+        const LINES_AFTER = FILTERED_LINES.slice(i + length, lines.length).filter(line => !line.newStr.match(ONE_LINE_COMMENT));
         if(!(variables.length-1)) LINES_AFTER.unshift(...getFilteredLines([line.substring(line.indexOf('='), line.length)]));
         
         checkLinesAfter(LINES_AFTER, variables);

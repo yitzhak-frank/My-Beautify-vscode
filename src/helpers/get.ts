@@ -1,7 +1,7 @@
+import { isComment } from './match';
 import { FilteredLine } from '../interfaces/main';
 import { filterRegex, filterString } from './replace';
 import { REGEX_PLACEHOLDER_G, STRING_PLACEHOLDER_G } from './regex';
-import { isComment } from './match';
 
 export const getFilteredLines = (lines: string[]): FilteredLine[] => {
     const FILTERED_LINES: FilteredLine[] = lines.map(line => {

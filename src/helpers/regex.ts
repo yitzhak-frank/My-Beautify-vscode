@@ -38,6 +38,7 @@ export const
     VAR_OR_LET_DECLARETION                        = /^(| +)(let|var)\b/,
     STRING_AFTER_VAR_OR_LET_WORD                  = /(?<=(.*[^.a-zA-Z0-9$_]|^)(let|var)\s).*/,
     VAR_DECLARETION_G                             = /(.*[^.a-zA-Z0-9$_])var\b/g,
+    DESTRUCTURE_VARIABLES_G                       = /[a-zA-Z0-9_$]+(?=( +|)(,|\}|\]))/g,
 
     ARROW_FUNCTION_SIGN                           = /=>/,
     ARROW_FUNCTION_SIGN_AT_END                    = /=>( +|);( +|)$/,
@@ -94,8 +95,8 @@ export const
     
     VALUE_ASSIGN_TO_VARIABLE           = (variable: string) => new RegExp(`(^| |;)(let|var) +(${variable})( +|)=`),
 
-    VARIABLE_EXIST                     = (variable: string) => new RegExp(`(.*([^.a-zA-Z0-9$_])|^)${variable}(.*([^.a-zA-Z0-9$_])|$)`),
+    VARIABLE_EXIST                     = (variable: string) => new RegExp(`(.*([^.a-zA-Z0-9$_])|^)\\b${variable}\\b(.*([^.a-zA-Z0-9$_])|$)`),
 
-    EQUAL_WITH_NO_VALUE_AFTER_VARIABLE = (variable: string) => new RegExp(`((.*([^.a-zA-Z0-9$_])|^)${variable})( +|)=( +|)$`),
+    EQUAL_WITH_NO_VALUE_AFTER_VARIABLE = (variable: string) => new RegExp(`((.*([^.a-zA-Z0-9$_])|^)\\b${variable}\\b)( +|)=( +|)$`),
 
-    VARIABLE_VALUE_CHANGE              = (variable: string) => new RegExp(`.*([-+]{2}(| +)${variable})|(.*[^.a-zA-Z0-9$_]|^| )(?<!(\\b(var|let|const)\\b)( +|))(${variable}(| +)((?=[^=])([-*\\/+%=]{2})|([^=]=[^=])))`);
+    VARIABLE_VALUE_CHANGE              = (variable: string) => new RegExp(`.*([-+]{2}(| +)\\b${variable}\\b)|(.*[^.a-zA-Z0-9$_]|^| )(?<!(\\b(var|let|const)\\b)( +|))(\\b${variable}\\b(| +)((?=[^=])([-*\\/+%=]{2})|([^=]=[^=])))`);
